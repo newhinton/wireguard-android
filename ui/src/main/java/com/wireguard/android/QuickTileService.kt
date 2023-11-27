@@ -66,14 +66,12 @@ class QuickTileService : TileService() {
                 }
             }
             else -> {
-                Log.e("TAG", "click")
                 unlockAndRun {
                     applicationScope.launch {
                         try {
                             tunnel.setStateAsync(Tunnel.State.TOGGLE)
                             updateTile()
                         } catch (_: Throwable) {
-                            Log.e("TAG", "click?")
                             val intent = Intent(this@QuickTileService, TunnelToggleActivity::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {

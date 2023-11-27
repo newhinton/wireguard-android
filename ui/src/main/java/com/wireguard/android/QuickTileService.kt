@@ -5,6 +5,7 @@
 package com.wireguard.android
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -52,6 +53,7 @@ class QuickTileService : TileService() {
     }
 
     override fun onClick() {
+        updateTile()
         when (val tunnel = tunnel) {
             null -> {
                 val intent = Intent(this, MainActivity::class.java)
@@ -64,21 +66,22 @@ class QuickTileService : TileService() {
                 }
             }
             else -> {
+                Log.e("TAG", "click")
                 unlockAndRun {
                     applicationScope.launch {
                         try {
                             tunnel.setStateAsync(Tunnel.State.TOGGLE)
                             updateTile()
                         } catch (_: Throwable) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !Settings.canDrawOverlays(this@QuickTileService)) {
-                                val permissionIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-                                permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                startActivityAndCollapse(PendingIntent.getActivity(this@QuickTileService, 0, permissionIntent, PendingIntent.FLAG_IMMUTABLE))
-                                return@launch
+                            Log.e("TAG", "click?")
+                            val intent = Intent(this@QuickTileService, TunnelToggleActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                                startActivityAndCollapse(PendingIntent.getActivity(this@QuickTileService, 0, intent, PendingIntent.FLAG_IMMUTABLE))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                startActivity(intent)
                             }
-                            val toggleIntent = Intent(this@QuickTileService, TunnelToggleActivity::class.java)
-                            toggleIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(toggleIntent)
                         }
                     }
                 }
@@ -133,7 +136,7 @@ class QuickTileService : TileService() {
         isAdded = false
     }
 
-    private fun updateTile() {
+    private fun updateTile(isConnecting: Boolean = false) {
         // Update the tunnel.
         val newTunnel = Application.getTunnelManager().lastUsedTunnel
         if (newTunnel != tunnel) {
@@ -148,6 +151,12 @@ class QuickTileService : TileService() {
             null -> {
                 tile.label = getString(R.string.app_name)
                 tile.state = Tile.STATE_INACTIVE
+                if(isConnecting) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        tile.subtitle = getString(R.string.quick_settings_tile_connecting)
+                        tile.state = Tile.STATE_ACTIVE
+                    }
+                }
                 tile.icon = iconOff
             }
             else -> {

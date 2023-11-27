@@ -48,6 +48,7 @@ class TunnelToggleActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        moveTaskToBack(true)
         lifecycleScope.launch {
             if (Application.getBackend() is GoBackend) {
                 val intent = GoBackend.VpnService.prepare(this@TunnelToggleActivity)

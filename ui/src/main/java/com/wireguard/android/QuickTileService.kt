@@ -22,6 +22,7 @@ import androidx.databinding.Observable
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import com.wireguard.android.activity.MainActivity
 import com.wireguard.android.activity.TunnelToggleActivity
+import com.wireguard.android.activity.TunnelToggleActivity.Companion.SHOW_PROGRESS
 import com.wireguard.android.backend.Tunnel
 import com.wireguard.android.model.ObservableTunnel
 import com.wireguard.android.util.applicationScope
@@ -74,6 +75,7 @@ class QuickTileService : TileService() {
                         } catch (_: Throwable) {
                             val intent = Intent(this@QuickTileService, TunnelToggleActivity::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            intent.putExtra(SHOW_PROGRESS, true)
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                                 startActivityAndCollapse(PendingIntent.getActivity(this@QuickTileService, 0, intent, PendingIntent.FLAG_IMMUTABLE))
                             } else {
